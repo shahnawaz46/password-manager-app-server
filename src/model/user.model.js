@@ -10,9 +10,14 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
+    profile: { type: String, default: null },
     password: {
       type: String,
       required: true,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }
