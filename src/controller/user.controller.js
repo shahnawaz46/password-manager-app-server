@@ -54,7 +54,7 @@ export const register = async (req, res) => {
 
     await Otp.create({ user: newUser._id, otp });
 
-    return res.status(200).json({ msg: 'Registration successfully done' });
+    return res.status(201).json({ msg: 'Registration successfully done' });
   } catch (err) {
     // console.log(err);
     return res
@@ -111,9 +111,26 @@ export const otpVerification = async (req, res) => {
 };
 
 export const login = async (req, res) => {
+  const { email, password } = req.body;
   try {
-    console.log('done');
-    return res.status(200).json({ msg: 'working fine' });
+    const user = await User.findOne({ email });
+    console.log(user);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found please Register' });
+    }
+
+    // comparing user password with stored password
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect) {
+      return res.status(401).json({ error: 'Wrong credentials' });
+    }
+
+    return res.status(200).json({
+      _id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      profile: user.profile,
+    });
   } catch (err) {
     return res
       .status(500)
