@@ -2,8 +2,9 @@ import { Schema, model } from 'mongoose';
 
 const vaultSchema = new Schema(
   {
-    userId: {
+    user: {
       type: Schema.Types.ObjectId,
+      ref: 'User',
       required: true,
     },
     name: {

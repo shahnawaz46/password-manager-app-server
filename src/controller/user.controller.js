@@ -1,4 +1,5 @@
 import * as bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import { User } from '../model/user.model.js';
 import { sendMail } from '../utils/sendMail.js';
 import { generateMailTemplate } from '../utils/emailBody.js';
@@ -97,8 +98,13 @@ export const otpVerification = async (req, res) => {
     user.isVerified = true;
     await user.save();
 
+    const token = jwt.sign(
+      { email: user.email, _id: user._id },
+      process.env.JWT_SECRET
+    );
+
     return res.status(200).json({
-      _id: user._id,
+      token,
       fullName: user.fullName,
       email: user.email,
       profile: user.profile,
@@ -114,7 +120,6 @@ export const login = async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await User.findOne({ email });
-    console.log(user);
     if (!user) {
       return res.status(404).json({ error: 'User not found please Register' });
     }
@@ -125,8 +130,29 @@ export const login = async (req, res) => {
       return res.status(401).json({ error: 'Wrong credentials' });
     }
 
+    const token = jwt.sign(
+      { email: user.email, _id: user._id },
+      process.env.JWT_SECRET
+    );
+
     return res.status(200).json({
-      _id: user._id,
+      token,
+      fullName: user.fullName,
+      email: user.email,
+      profile: user.profile,
+    });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ error: 'Something went wrong please try again after some time' });
+  }
+};
+
+export const profile = async (req, res) => {
+  try {
+    const user = await User.findById(req.data._id);
+
+    return res.status(200).json({
       fullName: user.fullName,
       email: user.email,
       profile: user.profile,
