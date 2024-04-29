@@ -12,7 +12,7 @@ const vaultSchema = new Schema(
       required: true,
       unique: true,
     },
-    emailOrUserName: {
+    userName: {
       type: String,
       required: true,
     },

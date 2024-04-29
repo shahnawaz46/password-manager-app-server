@@ -12,5 +12,4 @@ export const verification = (req, res, next) => {
   } catch (err) {
     return res.status(401).json({ error: 'Authorization denied' });
   }
-  //   if()
 };

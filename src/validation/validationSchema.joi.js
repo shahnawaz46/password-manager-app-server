@@ -42,3 +42,22 @@ export const userLoginSchema = Joi.object({
     'string.min': 'Password length must be at least 6 characters long',
   }),
 });
+
+export const vaultSchema = Joi.object({
+  name: Joi.string().required().messages({
+    'any.required': 'Name is required',
+    'string.empty': 'Name is not allowed to be empty',
+  }),
+  userName: Joi.string().required().messages({
+    'any.required': 'UserName is required',
+    'string.empty': 'UserName is not allowed to be empty',
+  }),
+  password: Joi.string().required().messages({
+    'any.required': 'Password is required',
+    'string.empty': 'Password is not allowed to be empty',
+  }),
+  category: Joi.string().required().valid('App', 'Browser').messages({
+    'any.required': 'Category is required',
+    'any.only': 'Category must be App or Browser',
+  }),
+});
