@@ -2,6 +2,7 @@ import express from 'express';
 import {
   addVault,
   deleteVault,
+  editVault,
   getAllVault,
 } from '../controller/vault.controller.js';
 import { verification } from '../middleware/verification.js';
@@ -13,6 +14,6 @@ const router = express.Router();
 router.get('/password', verification, getAllVault);
 router.post('/password', verification, validate(vaultSchema), addVault);
 router.delete('/password', verification, deleteVault);
-router.patch('');
+router.patch('/password', verification, editVault);
 
 export default router;

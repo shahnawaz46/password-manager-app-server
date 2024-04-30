@@ -37,6 +37,13 @@ export const getAllVault = async (req, res) => {
 export const addVault = async (req, res) => {
   const { name, userName, password, category } = req.body;
   try {
+    const isAlreadyExists = await Vault.findOne({ name });
+    if (isAlreadyExists) {
+      return res
+        .status(409)
+        .json({ error: `Data of ${isAlreadyExists.name} already present` });
+    }
+
     const vault = await Vault.create({
       user: req.data._id,
       name,
@@ -65,6 +72,22 @@ export const deleteVault = async (req, res) => {
     return res.status(201).json({
       msg: 'Deleted Successfully',
     });
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ error: 'Something went wrong please try again after some time' });
+  }
+};
+
+export const editVault = async (req, res) => {
+  const { _id, ...rest } = req.body;
+  try {
+    const vault = await Vault.findByIdAndUpdate(_id, rest, {
+      new: true,
+    }).select('name userName password category');
+
+    return res.status(201).json(vault);
   } catch (err) {
     console.log(err);
     return res
