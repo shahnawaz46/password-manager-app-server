@@ -95,3 +95,26 @@ export const editVault = async (req, res) => {
       .json({ error: 'Something went wrong please try again after some time' });
   }
 };
+
+export const searchVault = async (req, res) => {
+  const { search, category } = req.query;
+
+  try {
+    // .*: Matches any characters zero or more times (wildcard)
+    // $options: 'i': Enables case-insensitive matching
+    const vault = await Vault.find({
+      $and: [
+        { user: req.data._id },
+        category === 'App' || category === 'Browser' ? { category } : {},
+        { name: { $regex: `${search}.*`, $options: 'i' } },
+      ],
+    }).select('name userName password category');
+
+    return res.status(201).json(vault);
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ error: 'Something went wrong please try again after some time' });
+  }
+};

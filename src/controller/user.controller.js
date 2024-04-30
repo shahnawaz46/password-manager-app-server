@@ -57,7 +57,6 @@ export const register = async (req, res) => {
 
     return res.status(201).json({ msg: 'Registration successfully done' });
   } catch (err) {
-    // console.log(err);
     return res
       .status(500)
       .json({ error: 'Something went wrong please try again after some time' });
