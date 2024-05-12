@@ -5,7 +5,7 @@ export const getAllVault = async (req, res) => {
   try {
     if (category === 'All') {
       const allPassword = await Vault.find({ user: req.data._id })
-        .select('name userName password category')
+        .select('name data category')
         .sort({ createdAt: -1 });
       let app = 0;
       let browser = 0;
@@ -20,9 +20,12 @@ export const getAllVault = async (req, res) => {
         password: allPassword,
         count: { all: allPassword.length, app, browser },
       });
-    } else if (category === 'App' || category === 'Browser') {
+    }
+
+    // if category is App or Browser then i don't need to calculate the count
+    else if (category === 'App' || category === 'Browser') {
       const allPassword = await Vault.find({ user: req.data._id, category })
-        .select('name userName password category')
+        .select('name data category')
         .sort({ createdAt: -1 });
       return res.status(200).json({ password: allPassword });
     }
@@ -35,7 +38,7 @@ export const getAllVault = async (req, res) => {
 };
 
 export const addVault = async (req, res) => {
-  const { name, userName, password, category } = req.body;
+  const { name, data, category } = req.body;
   try {
     const isAlreadyExists = await Vault.findOne({ name });
     if (isAlreadyExists) {
@@ -47,14 +50,12 @@ export const addVault = async (req, res) => {
     const vault = await Vault.create({
       user: req.data._id,
       name,
-      userName,
-      password,
+      data,
       category,
     });
     return res.status(201).json({
       name: vault.name,
-      userName: vault.userName,
-      password: vault.password,
+      data: vault.data,
       category: vault.category,
       _id: vault._id,
     });
@@ -85,7 +86,7 @@ export const editVault = async (req, res) => {
   try {
     const vault = await Vault.findByIdAndUpdate(_id, rest, {
       new: true,
-    }).select('name userName password category');
+    }).select('name data category');
 
     return res.status(201).json(vault);
   } catch (err) {

@@ -73,7 +73,7 @@ export const otpVerification = async (req, res) => {
         .json({ error: 'User not found please singup again' });
     }
 
-    const isOtpExists = await Otp.findOne({ user: user.id });
+    const isOtpExists = await Otp.findOne({ user: user._id });
     if (!isOtpExists) {
       return res.status(400).json({ error: 'Invalid OTP or OTP expired' });
     }
@@ -103,6 +103,7 @@ export const otpVerification = async (req, res) => {
     );
 
     return res.status(200).json({
+      _id: user._id,
       token,
       fullName: user.fullName,
       email: user.email,
@@ -118,7 +119,9 @@ export const otpVerification = async (req, res) => {
 export const login = async (req, res) => {
   const { email, password } = req.body;
   try {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select(
+      'email password fullName profile isVerified'
+    );
     if (!user) {
       return res.status(404).json({ error: 'User not found please Register' });
     }
@@ -129,18 +132,34 @@ export const login = async (req, res) => {
       return res.status(401).json({ error: 'Wrong credentials' });
     }
 
+    // if user didn't verified email then returning this error for email verification
+    if (!user.isVerified) {
+      // generating 6 digit otp
+      const otp = Math.ceil(100000 + Math.random() * 918273);
+
+      await sendMail(email, 'Account Verification', generateMailTemplate(otp));
+
+      await Otp.findOneAndUpdate({ user: user._id }, { otp }, { upsert: true });
+
+      return res
+        .status(400)
+        .json({ error: 'User not verified, Please verify' });
+    }
+
     const token = jwt.sign(
       { email: user.email, _id: user._id },
       process.env.JWT_SECRET
     );
 
     return res.status(200).json({
+      _id: user._id,
       token,
       fullName: user.fullName,
       email: user.email,
       profile: user.profile,
     });
   } catch (err) {
+    console.log(err);
     return res
       .status(500)
       .json({ error: 'Something went wrong please try again after some time' });

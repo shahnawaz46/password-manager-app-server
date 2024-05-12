@@ -48,13 +48,9 @@ export const vaultSchema = Joi.object({
     'any.required': 'Name is required',
     'string.empty': 'Name is not allowed to be empty',
   }),
-  userName: Joi.string().required().messages({
-    'any.required': 'UserName is required',
-    'string.empty': 'UserName is not allowed to be empty',
-  }),
-  password: Joi.string().required().messages({
-    'any.required': 'Password is required',
-    'string.empty': 'Password is not allowed to be empty',
+  data: Joi.string().required().messages({
+    'any.required': 'UserName and password is required',
+    'string.empty': 'UserName and password is not allowed to be empty',
   }),
   category: Joi.string().required().valid('App', 'Browser').messages({
     'any.required': 'Category is required',

@@ -12,11 +12,7 @@ const vaultSchema = new Schema(
       required: true,
       unique: true,
     },
-    userName: {
-      type: String,
-      required: true,
-    },
-    password: {
+    data: {
       type: String,
       required: true,
     },
