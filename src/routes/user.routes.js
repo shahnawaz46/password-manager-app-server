@@ -4,9 +4,12 @@ import {
   otpVerification,
   profile,
   register,
+  resendOtp,
+  updatePassword,
 } from '../controller/user.controller.js';
 import { validate } from '../middleware/validate.joi.js';
 import {
+  forgotPasswordSchema,
   userLoginSchema,
   userRegistrationSchema,
 } from '../validation/validationSchema.joi.js';
@@ -18,5 +21,11 @@ router.post('/user/register', validate(userRegistrationSchema), register);
 router.post('/user/otp-verify', otpVerification);
 router.post('/user/login', validate(userLoginSchema), login);
 router.get('/user/profile', verification, profile);
+router.post('/user/resend-otp', resendOtp);
+router.post(
+  '/user/update-password',
+  validate(forgotPasswordSchema),
+  updatePassword
+);
 
 export default router;

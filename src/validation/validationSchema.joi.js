@@ -57,3 +57,27 @@ export const vaultSchema = Joi.object({
     'any.only': 'Category must be App or Browser',
   }),
 });
+
+export const forgotPasswordSchema = Joi.object({
+  email: Joi.string().required().email().messages({
+    'any.required': 'Something went wrong please forgot password again',
+    'string.empty': 'Something went wrong please forgot password again',
+    'string.email': 'Something went wrong please forgot password again',
+  }),
+  password: Joi.string()
+    .required()
+    .min(6)
+    .pattern(new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])[a-zA-Z0-9]+$'))
+    .messages({
+      'any.required': 'Password is required',
+      'string.empty': 'Password is not allowed to be empty',
+      'string.min': 'Password length must be at least 6 characters long',
+      'string.pattern.base':
+        'Password must contain at least one lowercase letter, one uppercase letter, and one number',
+    }),
+
+  confirmPassword: Joi.string().required().valid(Joi.ref('password')).messages({
+    'any.required': 'Confirm Password is required',
+    'any.only': 'Passwords do not match',
+  }),
+});

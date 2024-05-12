@@ -15,7 +15,7 @@ export const register = async (req, res) => {
       return res.status(409).json({ error: 'User already exist please login' });
     }
 
-    // hash the password by bcrypt to store inside database
+    // hash the password by using bcrypt to store inside database
     const hashPassword = await bcrypt.hash(password, 10);
 
     // generating 6 digit otp
@@ -175,6 +175,75 @@ export const profile = async (req, res) => {
       email: user.email,
       profile: user.profile,
     });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ error: 'Something went wrong please try again after some time' });
+  }
+};
+
+export const resendOtp = async (req, res) => {
+  const { email, type } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        error:
+          type === 'resend-otp'
+            ? 'Something went wrong please singup/login again'
+            : type === 'forgot-password'
+            ? 'Email not found please login/signup again'
+            : '',
+        step: 'redirect',
+      });
+    }
+
+    const otp = Math.ceil(100000 + Math.random() * 918273);
+
+    await sendMail(
+      email,
+      type === 'resend-otp'
+        ? 'Account Verification'
+        : type === 'forgot-password'
+        ? 'Forgot Password'
+        : '',
+      generateMailTemplate(otp)
+    );
+
+    await Otp.findOneAndUpdate({ user: user._id }, { otp }, { upsert: true });
+
+    return res.status(200).json({
+      message:
+        type === 'resend-otp'
+          ? 'New OTP has been sent to your email please check'
+          : type === 'forgot-password'
+          ? 'OTP has been sent to your email please check'
+          : '',
+    });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ error: 'Something went wrong please try again after some time' });
+  }
+};
+
+export const updatePassword = async (req, res) => {
+  const { password, email } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: 'Something went wrong please forgot password again' });
+    }
+
+    // hash the password by using bcrypt to store inside database
+    const hashPassword = await bcrypt.hash(password, 10);
+
+    user.password = hashPassword;
+    await user.save();
+
+    return res.status(200).json({ message: 'Password updated, login again' });
   } catch (err) {
     return res
       .status(500)
