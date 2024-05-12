@@ -109,7 +109,7 @@ export const searchVault = async (req, res) => {
         category === 'App' || category === 'Browser' ? { category } : {},
         { name: { $regex: `${search}.*`, $options: 'i' } },
       ],
-    }).select('name userName password category');
+    }).select('name data category');
 
     return res.status(201).json(vault);
   } catch (err) {
