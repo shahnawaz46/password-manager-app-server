@@ -16,6 +16,7 @@ import {
   userRegistrationSchema,
 } from '../validation/validationSchema.joi.js';
 import { verification } from '../middleware/verification.js';
+import multerUpload from '../middleware/multer.js';
 
 const router = express.Router();
 
@@ -26,6 +27,7 @@ router.get('/user/profile', verification, profile);
 router.patch(
   '/user/update-profile',
   verification,
+  multerUpload.single('profileImage'),
   validate(accountUpdateSchema),
   updateProfile
 );

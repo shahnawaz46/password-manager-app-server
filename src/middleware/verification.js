@@ -8,6 +8,8 @@ export const verification = (req, res, next) => {
       const verified = jwt.verify(token, process.env.JWT_SECRET);
       req.data = verified;
       next();
+    } else {
+      throw new Error();
     }
   } catch (err) {
     return res.status(401).json({ error: 'Authorization denied' });

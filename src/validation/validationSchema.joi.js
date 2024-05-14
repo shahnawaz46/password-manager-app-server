@@ -34,10 +34,12 @@ export const userRegistrationSchema = Joi.object({
 
 export const userLoginSchema = Joi.object({
   email: Joi.string().email().required().messages({
+    'any.required': 'Email is required',
     'string.empty': 'Email is not allowed to be empty',
     'string.email': 'Please enter a valid email address',
   }),
   password: Joi.string().required().min(6).messages({
+    'any.required': 'Password is required',
     'string.empty': 'Password is not allowed to be empty',
     'string.min': 'Password length must be at least 6 characters long',
   }),
@@ -83,7 +85,7 @@ export const forgotPasswordSchema = Joi.object({
 });
 
 // i am not using required here because these fields are not required
-// but if user will pass empty data like fullName:"", phoneNo:"" or gender:"" then it will throw error for empty field
+// but if user will pass empty data like  profileImage:"", fullName:"", phoneNo:"" or gender:"" then it will throw error for empty field
 export const accountUpdateSchema = Joi.object({
   fullName: Joi.string().messages({
     'string.empty': 'Full Name is not allow to be empty',

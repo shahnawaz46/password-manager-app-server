@@ -4,6 +4,7 @@ import { User } from '../model/user.model.js';
 import { sendMail } from '../utils/sendMail.js';
 import { generateMailTemplate } from '../utils/emailBody.js';
 import { Otp } from '../model/otp.model.js';
+import { uploadImage } from '../cloudinary/Cloudinary.js';
 
 export const register = async (req, res) => {
   const { fullName, email, password } = req.body;
@@ -107,7 +108,7 @@ export const otpVerification = async (req, res) => {
       token,
       fullName: user.fullName,
       email: user.email,
-      profile: user.profile,
+      profileImage: user.profileImage,
       gender: user.gender,
       phoneNo: user.phoneNo,
     });
@@ -156,7 +157,7 @@ export const login = async (req, res) => {
       token,
       fullName: user.fullName,
       email: user.email,
-      profile: user.profile,
+      profileImage: user.profileImage,
       gender: user.gender,
       phoneNo: user.phoneNo,
     });
@@ -174,7 +175,7 @@ export const profile = async (req, res) => {
     return res.status(200).json({
       fullName: user.fullName,
       email: user.email,
-      profile: user.profile,
+      profileImage: user.profileImage,
       gender: user.gender,
       phoneNo: user.phoneNo,
     });
@@ -187,15 +188,20 @@ export const profile = async (req, res) => {
 };
 
 export const updateProfile = async (req, res) => {
+  let updatedValues = req.body;
   try {
-    const user = await User.findByIdAndUpdate(req.data._id, req.body, {
+    if (req.file) {
+      var imageUrl = await uploadImage(req.file.path);
+      updatedValues = { ...updatedValues, profileImage: imageUrl };
+    }
+
+    const user = await User.findByIdAndUpdate(req.data._id, updatedValues, {
       new: true,
     });
-    console.log(req.body, user);
     return res.status(200).json({
       fullName: user.fullName,
       email: user.email,
-      profile: user.profile,
+      profileImage: user.profileImage,
       gender: user.gender,
       phoneNo: user.phoneNo,
     });
