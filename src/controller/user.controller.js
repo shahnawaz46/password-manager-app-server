@@ -108,6 +108,8 @@ export const otpVerification = async (req, res) => {
       fullName: user.fullName,
       email: user.email,
       profile: user.profile,
+      gender: user.gender,
+      phoneNo: user.phoneNo,
     });
   } catch (err) {
     return res
@@ -119,9 +121,7 @@ export const otpVerification = async (req, res) => {
 export const login = async (req, res) => {
   const { email, password } = req.body;
   try {
-    const user = await User.findOne({ email }).select(
-      'email password fullName profile isVerified'
-    );
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ error: 'User not found please Register' });
     }
@@ -157,6 +157,8 @@ export const login = async (req, res) => {
       fullName: user.fullName,
       email: user.email,
       profile: user.profile,
+      gender: user.gender,
+      phoneNo: user.phoneNo,
     });
   } catch (err) {
     console.log(err);
@@ -169,13 +171,36 @@ export const login = async (req, res) => {
 export const profile = async (req, res) => {
   try {
     const user = await User.findById(req.data._id);
-
     return res.status(200).json({
       fullName: user.fullName,
       email: user.email,
       profile: user.profile,
+      gender: user.gender,
+      phoneNo: user.phoneNo,
     });
   } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ error: 'Something went wrong please try again after some time' });
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(req.data._id, req.body, {
+      new: true,
+    });
+    console.log(req.body, user);
+    return res.status(200).json({
+      fullName: user.fullName,
+      email: user.email,
+      profile: user.profile,
+      gender: user.gender,
+      phoneNo: user.phoneNo,
+    });
+  } catch (err) {
+    console.log(err);
     return res
       .status(500)
       .json({ error: 'Something went wrong please try again after some time' });
@@ -243,7 +268,9 @@ export const updatePassword = async (req, res) => {
     user.password = hashPassword;
     await user.save();
 
-    return res.status(200).json({ message: 'Password updated, login again' });
+    return res
+      .status(200)
+      .json({ message: 'Password updated successfully, login again' });
   } catch (err) {
     return res
       .status(500)

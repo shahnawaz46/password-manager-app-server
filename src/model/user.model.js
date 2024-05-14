@@ -10,6 +10,15 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
+    gender: {
+      type: String,
+      enum: ['Male', 'Female', 'Others'],
+      default: null,
+    },
+    phoneNo: {
+      type: String,
+      default: null,
+    },
     profile: { type: String, default: null },
     password: {
       type: String,

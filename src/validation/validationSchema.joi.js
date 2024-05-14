@@ -81,3 +81,22 @@ export const forgotPasswordSchema = Joi.object({
     'any.only': 'Passwords do not match',
   }),
 });
+
+// i am not using required here because these fields are not required
+// but if user will pass empty data like fullName:"", phoneNo:"" or gender:"" then it will throw error for empty field
+export const accountUpdateSchema = Joi.object({
+  fullName: Joi.string().messages({
+    'string.empty': 'Full Name is not allow to be empty',
+  }),
+  phoneNo: Joi.string()
+    .length(10)
+    .regex(/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/)
+    .messages({
+      'string.empty': 'Phone Number is not allow to be empty',
+      'string.length': 'Phone Number length must be 10 digit',
+      'string.pattern.base': 'Enter a valid phone number',
+    }),
+  gender: Joi.string()
+    .valid('Male', 'Female', 'Others')
+    .messages({ 'any.only': 'Gender must be Male, Female or Others' }),
+});
