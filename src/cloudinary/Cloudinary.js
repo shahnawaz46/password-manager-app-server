@@ -23,7 +23,15 @@ export const uploadImage = async (url) => {
 
   try {
     const result = await cloudinary.uploader.upload(url, options);
-    return result.secure_url;
+    return { url: result.secure_url, publicId: result.public_id };
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const deleteImage = async (publicId) => {
+  try {
+    await cloudinary.uploader.destroy(publicId);
   } catch (err) {
     console.log(err);
   }

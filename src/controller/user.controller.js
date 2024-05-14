@@ -2,9 +2,13 @@ import * as bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { User } from '../model/user.model.js';
 import { sendMail } from '../utils/sendMail.js';
-import { generateMailTemplate } from '../utils/emailBody.js';
+import {
+  forgotPasswordEmail,
+  registrationVerificationEmail,
+  thankForRegistration,
+} from '../utils/emailBody.js';
 import { Otp } from '../model/otp.model.js';
-import { uploadImage } from '../cloudinary/Cloudinary.js';
+import { deleteImage, uploadImage } from '../cloudinary/Cloudinary.js';
 
 export const register = async (req, res) => {
   const { fullName, email, password } = req.body;
@@ -34,7 +38,11 @@ export const register = async (req, res) => {
       );
 
       // after the account is updated now sending otp to the mail
-      await sendMail(email, 'Account Verification', generateMailTemplate(otp));
+      await sendMail(
+        email,
+        'Account Verification',
+        registrationVerificationEmail(otp)
+      );
 
       await Otp.findOneAndUpdate(
         { user: userUpdated._id },
@@ -52,7 +60,11 @@ export const register = async (req, res) => {
     });
 
     // after the account is created now sending otp to the mail
-    await sendMail(email, 'Account Verification', generateMailTemplate(otp));
+    await sendMail(
+      email,
+      'Account Verification',
+      registrationVerificationEmail(otp)
+    );
 
     await Otp.create({ user: newUser._id, otp });
 
@@ -103,15 +115,21 @@ export const otpVerification = async (req, res) => {
       process.env.JWT_SECRET
     );
 
-    return res.status(200).json({
+    res.status(200).json({
       _id: user._id,
       token,
       fullName: user.fullName,
       email: user.email,
-      profileImage: user.profileImage,
+      profileImage: user.profileImage.url,
       gender: user.gender,
       phoneNo: user.phoneNo,
     });
+
+    await sendMail(
+      email,
+      'Registration Successfully',
+      thankForRegistration(user.fullName)
+    );
   } catch (err) {
     return res
       .status(500)
@@ -138,7 +156,11 @@ export const login = async (req, res) => {
       // generating 6 digit otp
       const otp = Math.ceil(100000 + Math.random() * 918273);
 
-      await sendMail(email, 'Account Verification', generateMailTemplate(otp));
+      await sendMail(
+        email,
+        'Account Verification',
+        registrationVerificationEmail(otp)
+      );
 
       await Otp.findOneAndUpdate({ user: user._id }, { otp }, { upsert: true });
 
@@ -157,7 +179,7 @@ export const login = async (req, res) => {
       token,
       fullName: user.fullName,
       email: user.email,
-      profileImage: user.profileImage,
+      profileImage: user.profileImage.url,
       gender: user.gender,
       phoneNo: user.phoneNo,
     });
@@ -175,7 +197,7 @@ export const profile = async (req, res) => {
     return res.status(200).json({
       fullName: user.fullName,
       email: user.email,
-      profileImage: user.profileImage,
+      profileImage: user.profileImage.url,
       gender: user.gender,
       phoneNo: user.phoneNo,
     });
@@ -191,17 +213,24 @@ export const updateProfile = async (req, res) => {
   let updatedValues = req.body;
   try {
     if (req.file) {
-      var imageUrl = await uploadImage(req.file.path);
-      updatedValues = { ...updatedValues, profileImage: imageUrl };
+      // if user upload new image then removing first previous one if available
+      const user = await User.findById(req.data._id);
+      user.profileImage?.publicId &&
+        (await deleteImage(user.profileImage.publicId));
+
+      // function for upload image to cloudinary
+      var { url, publicId } = await uploadImage(req.file.path);
+      updatedValues = { ...updatedValues, profileImage: { url, publicId } };
     }
 
     const user = await User.findByIdAndUpdate(req.data._id, updatedValues, {
       new: true,
     });
+
     return res.status(200).json({
       fullName: user.fullName,
       email: user.email,
-      profileImage: user.profileImage,
+      profileImage: user.profileImage.url,
       gender: user.gender,
       phoneNo: user.phoneNo,
     });
@@ -220,7 +249,7 @@ export const resendOtp = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         error:
-          type === 'resend-otp'
+          type === 'signup'
             ? 'Something went wrong please singup/login again'
             : type === 'forgot-password'
             ? 'Email not found please login/signup again'
@@ -231,15 +260,15 @@ export const resendOtp = async (req, res) => {
 
     const otp = Math.ceil(100000 + Math.random() * 918273);
 
-    await sendMail(
-      email,
-      type === 'resend-otp'
-        ? 'Account Verification'
-        : type === 'forgot-password'
-        ? 'Forgot Password'
-        : '',
-      generateMailTemplate(otp)
-    );
+    if (type === 'signup') {
+      await sendMail(
+        email,
+        'Account Verification',
+        registrationVerificationEmail(otp)
+      );
+    } else {
+      await sendMail(email, 'Forgot Password', forgotPasswordEmail(otp));
+    }
 
     await Otp.findOneAndUpdate({ user: user._id }, { otp }, { upsert: true });
 
