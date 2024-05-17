@@ -274,7 +274,7 @@ export const resendOtp = async (req, res) => {
 
     return res.status(200).json({
       message:
-        type === 'resend-otp'
+        type === 'signup'
           ? 'New OTP has been sent to your email please check'
           : type === 'forgot-password'
           ? 'OTP has been sent to your email please check'

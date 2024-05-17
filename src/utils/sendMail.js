@@ -10,7 +10,7 @@ export const sendMail = async (senderMail, subject, body) => {
   });
 
   await transporter.sendMail({
-    from: 'Password Manager passwordManager@gmail.com',
+    from: 'GuardVault shahnawaz85748@gmail.com',
     to: senderMail,
     subject: subject,
     // text: 'Hello to myself!',
