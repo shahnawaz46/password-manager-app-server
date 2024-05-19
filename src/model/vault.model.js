@@ -10,7 +10,6 @@ const vaultSchema = new Schema(
     name: {
       type: String,
       required: true,
-      unique: true,
     },
     data: {
       type: String,

@@ -40,7 +40,7 @@ export const getAllVault = async (req, res) => {
 export const addVault = async (req, res) => {
   const { name, data, category } = req.body;
   try {
-    const isAlreadyExists = await Vault.findOne({ name });
+    const isAlreadyExists = await Vault.findOne({ user: req.data._id, name });
     if (isAlreadyExists) {
       return res
         .status(409)
@@ -84,6 +84,19 @@ export const deleteVault = async (req, res) => {
 export const editVault = async (req, res) => {
   const { _id, ...rest } = req.body;
   try {
+    // if user want to edit the name then i am checking name is already present or not
+    if (rest?.name) {
+      const isAlreadyExists = await Vault.findOne({
+        user: req.data._id,
+        name: rest.name,
+      });
+      if (isAlreadyExists) {
+        return res
+          .status(409)
+          .json({ error: `Data of ${isAlreadyExists.name} already present` });
+      }
+    }
+
     const vault = await Vault.findByIdAndUpdate(_id, rest, {
       new: true,
     }).select('name data category');
