@@ -115,15 +115,7 @@ export const otpVerification = async (req, res) => {
       process.env.JWT_SECRET
     );
 
-    res.status(200).json({
-      _id: user._id,
-      token,
-      fullName: user.fullName,
-      email: user.email,
-      profileImage: user.profileImage.url,
-      gender: user.gender,
-      phoneNo: user.phoneNo,
-    });
+    res.status(200).json({ _id: user._id, token });
 
     await sendMail(
       email,
@@ -174,15 +166,7 @@ export const login = async (req, res) => {
       process.env.JWT_SECRET
     );
 
-    return res.status(200).json({
-      _id: user._id,
-      token,
-      fullName: user.fullName,
-      email: user.email,
-      profileImage: user.profileImage.url,
-      gender: user.gender,
-      phoneNo: user.phoneNo,
-    });
+    return res.status(200).json({ _id: user._id, token });
   } catch (err) {
     console.log(err);
     return res

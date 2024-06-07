@@ -6,20 +6,11 @@ export const getAllVault = async (req, res) => {
     if (category === 'All') {
       const allPassword = await Vault.find({ user: req.data._id })
         .select('name data category')
+        .skip(0)
+        .limit(10)
         .sort({ createdAt: -1 });
-      let app = 0;
-      let browser = 0;
-      allPassword.forEach((item) =>
-        item.category === 'App'
-          ? app++
-          : item.category === 'Browser'
-          ? browser++
-          : null
-      );
-      return res.status(200).json({
-        password: allPassword,
-        count: { all: allPassword.length, app, browser },
-      });
+
+      return res.status(200).json({ password: allPassword });
     }
 
     // if category is App or Browser then i don't need to calculate the count
@@ -122,9 +113,34 @@ export const searchVault = async (req, res) => {
         category === 'App' || category === 'Browser' ? { category } : {},
         { name: { $regex: `${search}.*`, $options: 'i' } },
       ],
-    }).select('name data category');
+    })
+      .skip(0)
+      .limit(10)
+      .select('name data category')
+      .sort({ createdAt: -1 });
 
     return res.status(201).json(vault);
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ error: 'Something went wrong please try again after some time' });
+  }
+};
+
+export const count = async (req, res) => {
+  try {
+    const vault = await Vault.find({ user: req.data._id });
+    let app = 0;
+    let browser = 0;
+    vault.forEach((item) =>
+      item.category === 'App'
+        ? app++
+        : item.category === 'Browser'
+        ? browser++
+        : null
+    );
+    return res.status(200).json({ all: vault.length, app, browser });
   } catch (err) {
     console.log(err);
     return res

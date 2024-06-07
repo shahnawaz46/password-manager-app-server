@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   addVault,
+  count,
   deleteVault,
   editVault,
   getAllVault,
@@ -17,5 +18,6 @@ router.post('/password', verification, validate(vaultSchema), addVault);
 router.delete('/password', verification, deleteVault);
 router.patch('/password', verification, editVault);
 router.get('/password/search', verification, searchVault);
+router.get('/count', verification, count);
 
 export default router;
