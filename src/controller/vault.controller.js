@@ -1,24 +1,52 @@
 import { Vault } from '../model/vault.model.js';
+import { generateNextUrl } from '../utils/GenerateNextUrl.js';
 
 export const getAllVault = async (req, res) => {
-  const { category } = req.query;
+  const { category, page = 1 } = req.query;
   try {
     if (category === 'All') {
       const allPassword = await Vault.find({ user: req.data._id })
         .select('name data category')
-        .skip(0)
-        .limit(10)
+        .skip((page - 1) * 10)
+        .limit(11)
         .sort({ createdAt: -1 });
 
-      return res.status(200).json({ password: allPassword });
+      // generating nextUrl only when current list contain value more than 10
+      const nextUrl =
+        allPassword.length < 11
+          ? null
+          : generateNextUrl(
+              req,
+              `category=${category}&page=${Number(page) + 1}`
+            );
+
+      return res.status(200).json({
+        next: nextUrl,
+        password: allPassword.slice(0, 10),
+      });
     }
 
     // if category is App or Browser then i don't need to calculate the count
     else if (category === 'App' || category === 'Browser') {
       const allPassword = await Vault.find({ user: req.data._id, category })
+        .skip((page - 1) * 10)
+        .limit(11)
         .select('name data category')
         .sort({ createdAt: -1 });
-      return res.status(200).json({ password: allPassword });
+
+      // generating nextUrl only when current list contain value more than 10
+      const nextUrl =
+        allPassword.length < 11
+          ? null
+          : generateNextUrl(
+              req,
+              `category=${category}&page=${Number(page) + 1}`
+            );
+
+      return res.status(200).json({
+        next: nextUrl,
+        password: allPassword.slice(0, 10),
+      });
     }
   } catch (err) {
     console.log(err);
@@ -102,24 +130,36 @@ export const editVault = async (req, res) => {
 };
 
 export const searchVault = async (req, res) => {
-  const { search, category } = req.query;
+  const { search, category, page = 1 } = req.query;
 
   try {
     // .*: Matches any characters zero or more times (wildcard)
     // $options: 'i': Enables case-insensitive matching
-    const vault = await Vault.find({
+    const allPassword = await Vault.find({
       $and: [
         { user: req.data._id },
         category === 'App' || category === 'Browser' ? { category } : {},
         { name: { $regex: `${search}.*`, $options: 'i' } },
       ],
     })
-      .skip(0)
-      .limit(10)
+      .skip((page - 1) * 10)
+      .limit(11)
       .select('name data category')
       .sort({ createdAt: -1 });
 
-    return res.status(201).json(vault);
+    // generating nextUrl only when current list contain value more than 10
+    const nextUrl =
+      allPassword.length < 11
+        ? null
+        : generateNextUrl(
+            req,
+            `category=${category}&search=${search}&page=${Number(page) + 1}`
+          );
+
+    return res.status(200).json({
+      next: nextUrl,
+      password: allPassword.slice(0, 10),
+    });
   } catch (err) {
     console.log(err);
     return res
