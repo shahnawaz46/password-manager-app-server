@@ -1,13 +1,13 @@
 import express from 'express';
 import cors from 'cors';
-import Connection from './src/Database/Connection.js';
+import mongoDBConnection from './src/database/mongo.database.js';
 import userRouter from './src/routes/user.routes.js';
 import vaultRouter from './src/routes/vault.routes.js';
 
 const app = express();
 
-// making db connection
-Connection();
+// mongoDB connection
+mongoDBConnection();
 
 // middleware
 app.use(cors({ origin: true }));

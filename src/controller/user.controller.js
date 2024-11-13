@@ -1,14 +1,14 @@
 import * as bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { User } from '../model/user.model.js';
-import { sendMail } from '../utils/sendMail.js';
+import sendMail from '../services/nodemailer.service.js';
+import { forgotPasswordEmail } from '../templates/ForgotPassword.template.js';
 import {
-  forgotPasswordEmail,
   registrationVerificationEmail,
   thankForRegistration,
-} from '../utils/emailBody.js';
+} from '../templates/RegistrationMail.template.js';
 import { Otp } from '../model/otp.model.js';
-import { deleteImage, uploadImage } from '../cloudinary/Cloudinary.js';
+import { deleteImage, uploadImage } from '../services/cloudinary.service.js';
 
 export const register = async (req, res) => {
   const { fullName, email, password } = req.body;
@@ -77,7 +77,8 @@ export const register = async (req, res) => {
 };
 
 export const otpVerification = async (req, res) => {
-  const { otp, email } = req.body;
+  const { otp, email, type } = req.body;
+
   try {
     const user = await User.findOne({ email });
     if (!user) {
@@ -106,6 +107,11 @@ export const otpVerification = async (req, res) => {
 
     // if otp matched then deleting OTP document and updating USER document
     await Otp.findByIdAndDelete(isOtpExists._id);
+
+    // if user try to forgot password then verify-otp before update password then this condition will true
+    if (type === 'forgot-password') {
+      return res.status(200).json({ email: user.email });
+    }
 
     user.isVerified = true;
     await user.save();
